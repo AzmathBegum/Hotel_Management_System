@@ -1,15 +1,14 @@
-# Use official OpenJDK image
-FROM eclipse-temurin:17-jdk-alpine
+# Stage 1: Build using Maven
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 
-# Set working directory
 WORKDIR /app
-
-# Copy project files
 COPY . .
-
-# Build the application
-RUN apt-get update && apt-get install -y maven
 RUN mvn clean package -DskipTests
 
-# Run the jar file
-CMD ["java", "-jar", "target/*.jar"]
+# Stage 2: Run the app
+FROM eclipse-temurin:17-jdk-alpine
+
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+
+CMD ["java", "-jar", "app.jar"]
