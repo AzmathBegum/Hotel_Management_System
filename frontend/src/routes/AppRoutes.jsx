@@ -6,19 +6,19 @@ import Login from "../auth/Login";
 import Register from "../auth/Register";
 
 import Dashboard from "../admin/Dashboard";
-import Rooms from "../admin/Rooms";
+import AdminRooms from "../admin/Rooms";
 import Bookings from "../admin/Bookings";
 import Customers from "../admin/Customers";
 import Payments from "../admin/Payments";
 import Reports from "../admin/Reports";
 
 import Home from "../customer/Home";
-import CustomerRooms from "../customer/Rooms";
 import BookRoom from "../customer/BookRoom";
 import CustomerServices from "../customer/Services";
 import MyBookings from "../customer/MyBookings";
 import ServiceDetails from "../customer/ServiceDetails";
 import MyServices from "../customer/MyServices";
+import CustomerRooms from "../customer/Rooms";
 
 import StaffDashboard from "../staff/StaffDashboard";
 import Tasks from "../staff/Tasks";
@@ -40,7 +40,7 @@ function AppRoutes() {
           <Dashboard />
         </ProtectedRoute>
       }/>
-      <Route path="/rooms" element={<Rooms />} />
+      <Route path="/rooms" element={<AdminRooms />} />
       <Route path="/bookings" element={<Bookings />} />
       <Route path="/customers" element={<Customers />} />
       <Route path="/payments" element={<Payments />} />
@@ -60,6 +60,7 @@ function AppRoutes() {
       <Route path="/my-bookings" element={<MyBookings />} />
       <Route path="/service-details" element={<ServiceDetails />} />
       <Route path="/my-services" element={<MyServices />} />
+      <Route path="/hotel/:id" element={<CustomerRooms />} />
 
       {/* Staff */}
       <Route

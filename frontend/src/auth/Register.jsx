@@ -1,15 +1,15 @@
-
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import "./LoginStyle.css"; 
 
-function Register() {
+const Register = () => {
 
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    username:"",
-    email:"",
-    password:""
+    username: "",
+    email: "",
+    password: ""
   });
 
   const handleChange = (e) => {
@@ -22,12 +22,11 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    try{
-
-      const res = await fetch("http://localhost:8080/api/auth/register",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
+    try {
+      const res = await fetch("http://localhost:8080/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(form)
       });
@@ -36,93 +35,77 @@ function Register() {
 
       alert(data);
 
-      navigate("/");
+      navigate("/"); // back to login
 
-    }catch(error){
+    } catch (error) {
       console.log(error);
       alert("Registration failed");
     }
-
   };
 
   return (
+    <div className="login-container">
 
-    <div style={{
-      display:"flex",
-      justifyContent:"center",
-      alignItems:"center",
-      height:"100vh",
-      background:"#17b6c8"
-    }}>
-
-      <form
-        onSubmit={handleRegister}
-        style={{
-          background:"white",
-          padding:"30px",
-          borderRadius:"10px",
-          width:"300px",
-          boxShadow:"0 0 10px rgba(0,0,0,0.1)"
-        }}
-      >
-
-        <h2 style={{textAlign:"center"}}>Register</h2>
-
-        <input
-          name="username"
-          placeholder="Full Name"
-          value={form.username}
-          onChange={handleChange}
-          style={inputStyle}
+      {/* LEFT IMAGE */}
+      <div className="login-image">
+        <img
+          src="https://observer.com/wp-content/uploads/sites/2/2023/03/katikies-chromata-2022_5192.jpg?quality=80"
+          alt="hotel"
         />
+      </div>
 
-        <input
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          style={inputStyle}
-        />
+      {/* RIGHT FORM */}
+      <div className="login-form-container">
+        <form className="form" onSubmit={handleRegister}>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          style={inputStyle}
-        />
+          <h2>Create Account</h2>
 
-        <button style={buttonStyle}>
-          Register
-        </button>
+          <span className="input-span">
+            <label className="label">Full Name</label>
+            <input
+              type="text"
+              name="username"
+              value={form.username}
+              onChange={handleChange}
+              required
+            />
+          </span>
 
-      </form>
+          <span className="input-span">
+            <label className="label">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </span>
+
+          <span className="input-span">
+            <label className="label">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+          </span>
+
+          <button type="submit" className="submit">
+            Register
+          </button>
+
+          <span className="span">
+            Already have an account? <Link to="/">Login</Link>
+          </span>
+
+        </form>
+      </div>
 
     </div>
-
   );
-}
-
-const inputStyle = {
-  width:"100%",
-  padding:"8px",
-  marginBottom:"10px",
-  borderRadius:"5px",
-  border:"1px solid #17b6c8",
-  background:"white",
-  color:"#17b6c8",
-  outline:"none"
-};
-
-const buttonStyle = {
-  width:"100%",
-  background:"#17b6c8",
-  color:"white",
-  padding:"8px",
-  border:"none",
-  borderRadius:"5px"
 };
 
 export default Register;
-

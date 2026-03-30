@@ -66,4 +66,10 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
+
+node_modules/
+.env
+dist/
+build/
+
 .vscode/

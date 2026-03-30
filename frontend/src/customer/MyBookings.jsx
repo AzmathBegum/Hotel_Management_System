@@ -1,72 +1,153 @@
+import { useState } from "react";
 
-function MyBookings(){
+function MyBookings() {
 
-  const bookings =
-    JSON.parse(localStorage.getItem("bookings") || "[]");
+  const [bookings, setBookings] = useState(
+    JSON.parse(localStorage.getItem("bookings") || "[]")
+  );
 
-  return(
+  const today = new Date();
 
+  // 🧠 Get booking status
+  const getStatus = (b) => {
+    const checkin = new Date(b.checkin);
+    const checkout = new Date(b.checkout);
+
+    if (today < checkin) return "Upcoming";
+    if (today >= checkin && today <= checkout) return "Staying";
+    return "Completed";
+  };
+
+  // ❌ Cancel booking
+  const cancelBooking = (id, checkinDate) => {
+    const checkin = new Date(checkinDate);
+    const diff = (checkin - today) / (1000 * 60 * 60 * 24);
+
+    if (diff < 2) {
+      alert("Cannot cancel within 2 days. Penalty may apply.");
+      return;
+    }
+
+    const updated = bookings.filter(b => b.id !== id);
+    setBookings(updated);
+    localStorage.setItem("bookings", JSON.stringify(updated));
+  };
+
+  return (
     <div style={page}>
 
-      <div style={card}>
+      <h2 style={title}>My Bookings</h2>
 
-        <h2>My Bookings</h2>
+      {bookings.length === 0 ? (
+        <p style={empty}>No bookings yet</p>
+      ) : (
 
-        {bookings.length === 0 ? (
-          <p>No bookings yet</p>
-        ) : (
+        <div style={list}>
+          {bookings.map(b => {
 
-          <table style={{width:"100%"}}>
+            const status = getStatus(b);
 
-            <thead>
-              <tr style={{background:"#17b6c8",color:"white"}}>
-                <th style={th}>Room</th>
-                <th style={th}>Check-In</th>
-                <th style={th}>Check-Out</th>
-                <th style={th}>Status</th>
-              </tr>
-            </thead>
+            return (
+              <div key={b.id} style={card}>
 
-            <tbody>
+                <div>
+                  <h3>{b.hotel}</h3>
+                  <p>{b.room}</p>
+                  <p>{b.checkin} → {b.checkout}</p>
+                </div>
 
-              {bookings.map(b=>(
-                <tr key={b.id}>
-                  <td style={td}>{b.room}</td>
-                  <td style={td}>{b.checkin}</td>
-                  <td style={td}>{b.checkout}</td>
-                  <td style={td}>{b.status}</td>
-                </tr>
-              ))}
+                <div style={right}>
 
-            </tbody>
+                  <span style={statusStyle(status)}>
+                    {status}
+                  </span>
 
-          </table>
+                  {status === "Upcoming" && (
+                    <button
+                      style={cancelBtn}
+                      onClick={() => cancelBooking(b.id, b.checkin)}
+                    >
+                      Cancel
+                    </button>
+                  )}
 
-        )}
+                </div>
 
-      </div>
+              </div>
+            );
+          })}
+        </div>
+
+      )}
 
     </div>
-
   );
 }
 
-const page={
-  background:"#17b6c8",
-  minHeight:"100vh",
-  padding:"40px"
-};
-
-const card={
-  background:"white",
-  padding:"30px",
-  borderRadius:"10px",
-  maxWidth:"700px",
-  margin:"auto"
-};
-
-const th={padding:"10px"};
-const td={padding:"10px"};
-
 export default MyBookings;
 
+//
+// 🎨 STYLES
+//
+
+const page = {
+  background: "#f7f7f7",
+  minHeight: "100vh",
+  padding: "30px"
+};
+
+const title = {
+  marginBottom: "20px"
+};
+
+const empty = {
+  textAlign: "center",
+  color: "#777"
+};
+
+const list = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "15px",
+  maxWidth: "700px",
+  margin: "auto"
+};
+
+const card = {
+  background: "white",
+  padding: "20px",
+  borderRadius: "12px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+};
+
+const right = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-end",
+  gap: "10px"
+};
+
+const statusStyle = (status) => ({
+  padding: "5px 10px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  color: "white",
+  background:
+    status === "Upcoming"
+      ? "#ff9800"
+      : status === "Staying"
+      ? "#4caf50"
+      : "#9e9e9e"
+});
+
+const cancelBtn = {
+  background: "#ff385c",
+  color: "white",
+  border: "none",
+  padding: "6px 12px",
+  borderRadius: "6px",
+  cursor: "pointer"
+};

@@ -35,10 +35,12 @@ public class SecurityConfig {
 
                 // Auth APIs
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/external-hotels/**").permitAll()
 
                 // ADMIN only
                 .requestMatchers("/api/staff/**").hasRole("ADMIN")
-                .requestMatchers("/api/services/**").hasRole("ADMIN")
+                .requestMatchers("/api/services/**").permitAll()
+                
 
                 // ADMIN + RECEPTIONIST
                 .requestMatchers("/api/rooms/**").hasAnyRole("ADMIN","RECEPTIONIST")

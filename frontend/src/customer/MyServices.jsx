@@ -1,126 +1,186 @@
-
 import { useEffect, useState } from "react";
 
-function MyServices(){
+function MyServices() {
 
-  const [services,setServices] = useState([]);
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    const fetchServices = async ()=>{
-
-      try{
-
+    const fetchServices = async () => {
+      try {
         const res = await fetch("http://localhost:8080/api/services");
 
+        if (!res.ok) {
+          setError("Failed to load services");
+          setLoading(false);
+          return;
+        }
+
         const data = await res.json();
+        console.log("API DATA:", data);
 
         setServices(data);
 
-      }catch(error){
-        console.log(error);
+      } catch (err) {
+        console.log(err);
+        setError("Something went wrong");
+      } finally {
+        setLoading(false);
       }
-
     };
 
     fetchServices();
 
-  },[]);
+  }, []);
 
-  return(
+  // 🧠 STATUS LOGIC
+  const getStatus = (s) => {
+    if (!s.date) return "Requested";
 
+    const today = new Date();
+    const serviceDate = new Date(s.date);
+
+    const diff = (today - serviceDate) / (1000 * 60 * 60 * 24);
+
+    if (diff > 1) return "Completed";
+    if (diff > 0) return "In Progress";
+    return "Requested";
+  };
+
+  // 🎨 STATUS COLOR
+  const getStatusStyle = (status) => {
+    if (status === "Completed") return { background: "#4caf50" };
+    if (status === "In Progress") return { background: "#2196f3" };
+    return { background: "#ff9800" };
+  };
+
+  return (
     <div style={page}>
 
-      <div style={card}>
+      <h2 style={title}>My Services</h2>
 
-        <h2 style={{color:"#17b6c8"}}>
-          My Service Requests
-        </h2>
+      {/* LOADING */}
+      {loading && <p style={center}>Loading...</p>}
 
-        {services.length === 0 ? (
+      {/* ERROR */}
+      {error && <p style={center}>{error}</p>}
 
-          <p>No service requests yet</p>
+      {/* EMPTY */}
+      {!loading && !error && services.length === 0 && (
+        <p style={center}>No service requests yet</p>
+      )}
 
-        ) : (
+      {/* DATA */}
+      {!loading && !error && services.length > 0 && (
 
-          <table style={table}>
+        <div style={list}>
 
-            <thead>
+          {services.map((s, index) => {
 
-              <tr style={headerRow}>
-                <th style={th}>Service</th>
-                <th style={th}>Type</th>
-                <th style={th}>Room</th>
-                <th style={th}>Price</th>
-                <th style={th}>Date</th>
-                <th style={th}>Status</th>
-              </tr>
+            // 🧠 SAFE DATA HANDLING
+            const serviceName = s.service || s.serviceName || "Service";
+            const type = s.type || s.description || "Not specified";
+            const price = s.total || s.price || 0;
+            const date = s.date || "No date";
 
-            </thead>
+            const statusText = getStatus(s);
 
-            <tbody>
+            return (
+              <div key={s.id || index} style={card}>
 
-              {services.map((s)=>(
-                <tr key={s.id}>
+                <div>
+                  <h3>{serviceName}</h3>
+                  <p style={typeStyle}>{type}</p>
+                  <p style={dateStyle}>{date}</p>
+                </div>
 
-                  <td style={td}>{s.service}</td>
-                  <td style={td}>{s.type}</td>
-                  <td style={td}>{s.room}</td>
-                  <td style={td}>₹{s.price}</td>
-                  <td style={td}>{s.date}</td>
-                  <td style={td}>{s.status}</td>
+                <div style={right}>
 
-                </tr>
-              ))}
+                  <span style={{ ...status, ...getStatusStyle(statusText) }}>
+                    {statusText}
+                  </span>
 
-            </tbody>
+                  <p style={priceStyle}>₹{price}</p>
 
-          </table>
+                </div>
 
-        )}
+              </div>
+            );
+          })}
 
-      </div>
+        </div>
+
+      )}
 
     </div>
-
   );
 }
 
-/* styles */
-
-const page={
-  background:"#17b6c8",
-  minHeight:"100vh",
-  padding:"40px"
-};
-
-const card={
-  background:"white",
-  padding:"30px",
-  borderRadius:"10px",
-  maxWidth:"800px",
-  margin:"auto"
-};
-
-const table={
-  width:"100%",
-  marginTop:"20px",
-  borderCollapse:"collapse"
-};
-
-const headerRow={
-  background:"#17b6c8",
-  color:"white"
-};
-
-const th={
-  padding:"10px"
-};
-
-const td={
-  padding:"10px",
-  borderBottom:"1px solid #eee"
-};
-
 export default MyServices;
 
+//
+// 🎨 STYLES
+//
+
+const page = {
+  background: "#f7f7f7",
+  minHeight: "100vh",
+  padding: "30px"
+};
+
+const title = {
+  marginBottom: "20px"
+};
+
+const center = {
+  textAlign: "center",
+  color: "#777"
+};
+
+const list = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "15px",
+  maxWidth: "800px",
+  margin: "auto"
+};
+
+const card = {
+  background: "white",
+  padding: "20px",
+  borderRadius: "12px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+};
+
+const right = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-end",
+  gap: "8px"
+};
+
+const status = {
+  color: "white",
+  padding: "5px 10px",
+  borderRadius: "20px",
+  fontSize: "12px"
+};
+
+const typeStyle = {
+  color: "#666",
+  fontSize: "14px"
+};
+
+const dateStyle = {
+  fontSize: "12px",
+  color: "#999"
+};
+
+const priceStyle = {
+  fontWeight: "bold"
+};

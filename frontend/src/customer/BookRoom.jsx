@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -7,7 +6,11 @@ function BookRoom() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const room = location.state;
+  const data = location.state;
+  const room = data?.room;
+  const hotel = data?.hotel;
+
+  const today = new Date().toISOString().split("T")[0];
 
   const [form, setForm] = useState({
     name: "",
@@ -15,6 +18,20 @@ function BookRoom() {
     checkin: "",
     checkout: ""
   });
+
+  // 🧠 calculate days
+  const getDays = () => {
+    if (!form.checkin || !form.checkout) return 0;
+
+    const start = new Date(form.checkin);
+    const end = new Date(form.checkout);
+
+    const diff = (end - start) / (1000 * 60 * 60 * 24);
+    return diff > 0 ? diff : 0;
+  };
+
+  const days = getDays();
+  const total = days * (room?.price || 0);
 
   const handleChange = (e) => {
     setForm({
@@ -26,12 +43,26 @@ function BookRoom() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (!form.name || !form.phone || !form.checkin || !form.checkout) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    if (form.checkout <= form.checkin) {
+      alert("Checkout must be after check-in");
+      return;
+    }
+
     const bookings =
       JSON.parse(localStorage.getItem("bookings") || "[]");
 
     const newBooking = {
       id: Date.now(),
-      room: room ? room.type : "Standard Room",
+      hotel: hotel?.name,
+      room: room?.type,
+      price: room?.price,
+      days,
+      total,
       ...form,
       status: "Confirmed"
     };
@@ -41,57 +72,64 @@ function BookRoom() {
     localStorage.setItem("bookings", JSON.stringify(bookings));
 
     alert("Booking Successful!");
-
     navigate("/my-bookings");
   };
 
   return (
-
     <div style={page}>
 
       <div style={card}>
 
-        <h2 style={{color:"#17b6c8"}}>Book Room</h2>
+        {/* HEADER */}
+        <h2 style={title}>Confirm your stay</h2>
 
-        <p style={roomText}>
-          Room Selected: <b>{room ? room.type : "Standard Room"}</b>
-        </p>
+        <div style={hotelBox}>
+          <p style={hotelName}>{hotel?.name}</p>
+          <p style={roomType}>{room?.type}</p>
+        </div>
 
+        {/* FORM */}
         <form onSubmit={handleSubmit}>
 
-          <label>Name</label>
           <input
             name="name"
-            placeholder="Enter your name"
+            placeholder="Your name"
             onChange={handleChange}
             style={input}
           />
 
-          <label>Phone</label>
           <input
             name="phone"
-            placeholder="Enter phone number"
+            placeholder="Phone number"
             onChange={handleChange}
             style={input}
           />
 
-          <label>Check-in Date</label>
-          <input
-            type="date"
-            name="checkin"
-            onChange={handleChange}
-            style={input}
-          />
-          <small style={hint}>Format: MM/DD/YYYY</small>
+          <div style={dateRow}>
+            <input
+              type="date"
+              name="checkin"
+              min={today}
+              onChange={handleChange}
+              style={input}
+            />
 
-          <label style={{marginTop:"10px"}}>Check-out Date</label>
-          <input
-            type="date"
-            name="checkout"
-            onChange={handleChange}
-            style={input}
-          />
-          <small style={hint}>Format: MM/DD/YYYY</small>
+            <input
+              type="date"
+              name="checkout"
+              min={form.checkin || today}
+              onChange={handleChange}
+              style={input}
+            />
+          </div>
+
+          {/* 💰 PRICE SUMMARY */}
+          {days > 0 && (
+            <div style={summary}>
+              <p>₹{room?.price} × {days} nights</p>
+              <h3>Total: ₹{total}</h3>
+            </div>
+          )}
 
           <button style={btn}>
             Confirm Booking
@@ -105,65 +143,74 @@ function BookRoom() {
   );
 }
 
-/* Page */
+export default BookRoom;
+
+//
+// 🎨 STYLES
+//
 
 const page = {
-  background: "#17b6c8",
-  minHeight: "100vh",
-  padding: "40px",
+  background: "#f7f7f7",
+  height: "100vh",
   display: "flex",
   justifyContent: "center",
   alignItems: "center"
 };
 
-/* Card */
-
 const card = {
   background: "white",
   padding: "30px",
-  borderRadius: "12px",
-  width: "400px"
+  borderRadius: "16px",
+  width: "380px",
+  boxShadow: "0 6px 20px rgba(0,0,0,0.08)"
 };
 
-/* Selected room */
-
-const roomText = {
-  marginBottom: "20px",
-  fontSize: "15px"
+const title = {
+  marginBottom: "15px"
 };
 
-/* Inputs */
+const hotelBox = {
+  marginBottom: "20px"
+};
+
+const hotelName = {
+  fontWeight: "600"
+};
+
+const roomType = {
+  color: "#666",
+  fontSize: "14px"
+};
 
 const input = {
   width: "100%",
-  padding: "10px",
-  marginTop: "6px",
-  marginBottom: "5px",
-  background: "white",
-  border: "1px solid #17b6c8",
-  borderRadius: "6px"
+  padding: "12px",
+  marginBottom: "12px",
+  border: "1px solid #ddd",
+  borderRadius: "10px",
+  fontSize: "14px"
 };
 
-/* Date hint */
-
-const hint = {
-  fontSize: "12px",
-  color: "#666",
-  display: "block",
-  marginBottom: "10px"
+const dateRow = {
+  display: "flex",
+  gap: "10px"
 };
 
-/* Button */
+const summary = {
+  background: "#fafafa",
+  padding: "15px",
+  borderRadius: "10px",
+  marginBottom: "15px",
+  textAlign: "center"
+};
 
 const btn = {
-  background: "#17b6c8",
+  background: "#ff385c",
   color: "white",
   border: "none",
-  padding: "10px",
+  padding: "12px",
   width: "100%",
-  borderRadius: "6px",
-  cursor: "pointer"
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontWeight: "bold"
 };
-
-export default BookRoom;
-
