@@ -49,6 +49,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/", "/health").permitAll()
                         .requestMatchers("/api/external-hotels/**").permitAll()
 
                         .requestMatchers("/api/staff/**").hasRole("ADMIN")
